@@ -24,6 +24,7 @@ import {
     ApiParam,
 } from '@nestjs/swagger';
 import { Request as ReqDecorator } from '@nestjs/common';
+import { ReserveGuestDto } from './dto/reserve-guest.dto';
 
 @ApiTags('gifts')
 @Controller('gifts')
