@@ -17,7 +17,11 @@ export class GiftsService {
         return this.prisma.gift.create({
             data: {
                 ...createGiftDto,
-                adminId,
+                admin: {
+                    connect: {
+                        id: adminId
+                    }
+                }
             },
         });
     }
@@ -71,7 +75,7 @@ export class GiftsService {
         const gift = await this.findOne(id);
 
         if (gift.status === 'reserved') {
-            throw new ConflictException('Gift already reserved');
+            throw new ConflictException('Presente já reservado');
         }
 
         return this.prisma.gift.update({

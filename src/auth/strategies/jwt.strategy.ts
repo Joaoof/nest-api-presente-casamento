@@ -25,6 +25,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new UnauthorizedException('Admin not configured');
         }
 
-        return { username: admin.username };
+        return { username: admin };
     }
 }

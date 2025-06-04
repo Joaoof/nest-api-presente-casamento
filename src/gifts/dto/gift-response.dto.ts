@@ -17,14 +17,16 @@ export class GiftResponseDto {
   @ApiProperty({ required: false })
   imageUrl?: string;
 
+
+  @ApiProperty({ required: false })
+  reservedBy?: string;
+
+
   @ApiProperty()
   priority: string;
 
   @ApiProperty()
   status: string;
-
-  @ApiProperty({ required: false })
-  reservedBy?: string;
 
   @ApiProperty()
   createdAt: Date;

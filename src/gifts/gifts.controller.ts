@@ -45,7 +45,10 @@ export class GiftsController {
         @Body() createGiftDto: CreateGiftDto,
         @ReqDecorator() req: any,
     ): Promise<GiftResponseDto> {
-        const adminId = req.user.sub  // ou o campo que contém o ID do admin
+        const adminId = req.user.username.id  // ou o campo que contém o ID do admin
+
+        console.log(adminId);
+
 
         const gift = await this.giftsService.create(createGiftDto, adminId);
         return {
@@ -64,6 +67,8 @@ export class GiftsController {
     })
     async findAll(): Promise<GiftResponseDto[]> {
         const gifts = await this.giftsService.findAll();
+        console.log(gifts);
+
         return gifts.map((gift) => ({
             ...gift,
             imageUrl: gift.imageUrl === null ? undefined : gift.imageUrl,
@@ -140,7 +145,7 @@ export class GiftsController {
     @ApiBody({
         schema: {
             example: {
-                reservedBy: 'João Silva',
+                reservedBy: 'João Silva <joao@email.com>',
             },
         },
     })
@@ -154,10 +159,12 @@ export class GiftsController {
         @Body('reservedBy') reservedBy: string,
     ): Promise<GiftResponseDto> {
         const reservedGift = await this.giftsService.reserveGift(id, reservedBy);
+        console.log(reservedGift);
+
         return {
             ...reservedGift,
-            imageUrl: reservedGift.imageUrl === null ? undefined : reservedGift.imageUrl,
-            reservedBy: reservedGift.reservedBy === null ? undefined : reservedGift.reservedBy,
+            imageUrl: reservedGift.imageUrl ?? undefined,
+            reservedBy: reservedGift.reservedBy ?? undefined,
         };
     }
 }

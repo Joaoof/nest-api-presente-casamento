@@ -21,6 +21,11 @@ export class CreateGiftDto {
     @IsOptional()
     imageUrl?: string;
 
+    @ApiProperty({ example: 'João e Maria' })
+    @IsString()
+    @IsOptional()
+    reservedBy?: string;
+
     @ApiProperty({ example: 'high | medium | low', required: false })
     @IsString()
     @IsOptional()
