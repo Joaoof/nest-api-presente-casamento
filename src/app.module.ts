@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { GiftsModule } from './gifts/gifts.module';
 import { PrismaModule } from '.././prisma/prisma.module';
+import { CacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { PrismaModule } from '.././prisma/prisma.module';
     PrismaModule,
     AuthModule,
     GiftsModule,
+    CacheModule, // Importa o módulo de cache
   ],
 })
 export class AppModule { }

@@ -65,14 +65,13 @@ export class GiftsController {
         description: 'Lista de presentes retornada com sucesso',
         type: [GiftResponseDto],
     })
+    @Get()
     async findAll(): Promise<GiftResponseDto[]> {
         const gifts = await this.giftsService.findAll();
-        console.log(gifts);
-
-        return gifts.map((gift) => ({
+        return gifts.map(gift => ({
             ...gift,
-            imageUrl: gift.imageUrl === null ? undefined : gift.imageUrl,
-            reservedBy: gift.reservedBy === null ? undefined : gift.reservedBy,
+            imageUrl: gift.imageUrl ?? undefined,
+            reservedBy: gift.reservedBy ?? undefined,
         }));
     }
 

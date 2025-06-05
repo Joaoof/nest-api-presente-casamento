@@ -29,6 +29,7 @@
     "prisma:generate": "npx prisma generate"
   },
   "dependencies": {
+    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -42,6 +43,8 @@
     "class-validator": "^0.14.2",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.9.0",
+    "redis": "^5.5.5",
+    "redis-cli": "^2.1.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

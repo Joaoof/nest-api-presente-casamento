@@ -1,4 +1,3 @@
-// gifts/dto/gift-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GiftResponseDto {
@@ -11,26 +10,24 @@ export class GiftResponseDto {
   @ApiProperty()
   description: string;
 
+  @ApiProperty({ required: false, example: 'https://exemplo.com/image.jpg' })
+  imageUrl?: string;
+
   @ApiProperty()
   price: number;
 
-  @ApiProperty({ required: false })
-  imageUrl?: string;
-
-
-  @ApiProperty({ required: false })
-  reservedBy?: string;
-
-
-  @ApiProperty()
+  @ApiProperty({ enum: ['high', 'medium', 'low'] })
   priority: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ['available', 'reserved'] })
   status: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false, example: 'João Silva <joao@example.com>' })
+  reservedBy?: string;
+
+  @ApiProperty({ format: 'date-time' })
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({ format: 'date-time' })
   updatedAt: Date;
 }
