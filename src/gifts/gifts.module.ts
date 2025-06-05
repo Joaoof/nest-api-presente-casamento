@@ -6,9 +6,10 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 import { CacheModule } from 'src/cache/cache.module';
 import { CacheService } from 'src/cache/cache.service';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
-    imports: [PrismaModule, AuthModule, CacheModule],
+    imports: [PrismaModule, AuthModule, CacheModule, MailModule],
     controllers: [GiftsController],
     providers: [GiftsService, CacheService],
     exports: [GiftsService],

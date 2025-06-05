@@ -5,6 +5,8 @@ import { AuthModule } from './auth/auth.module';
 import { GiftsModule } from './gifts/gifts.module';
 import { PrismaModule } from '.././prisma/prisma.module';
 import { CacheModule } from './cache/cache.module';
+import { MailService } from './mail/mail.service';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -13,6 +15,7 @@ import { CacheModule } from './cache/cache.module';
     AuthModule,
     GiftsModule,
     CacheModule, // Importa o módulo de cache
-  ],
+    MailModule
+  ],// Exporta o serviço de email para outros módulos
 })
 export class AppModule { }
