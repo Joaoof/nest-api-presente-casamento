@@ -21,66 +21,74 @@ export class GiftsService {
     ) { }
 
     async findAllPaginated(params: {
-        page: number | string;
-        limit: number | string;
-        filter: 'all' | 'available' | 'reserved';
+        page?: number | string;
+        limit?: number | string;
+        filter?: 'all' | 'available' | 'reserved';
         search?: string;
     }) {
-        const page = parseInt(`${params.page}`, 10) || 1;
-        const limit = parseInt(`${params.limit}`, 10) || 12;
-        const { filter, search } = params;
+        const page = Math.max(1, parseInt(`${params.page}`, 10) || 1);
+        const limit = Math.min(100, parseInt(`${params.limit}`, 10) || 12);
+        const { filter = 'all', search } = params;
 
-        // Chave única para o cache
         const cacheKey = `gifts_pagination:${page}:${limit}:${filter}:${search || 'none'}`;
-
-        // Verifica se existe no cache
         const cachedData = await this.cacheService.get<any>(cacheKey);
-        if (cachedData) {
-            return cachedData;
-        }
+        if (cachedData) return cachedData;
 
-        // Se não tiver no cache, busca no banco
         const skip = (page - 1) * limit;
-
         let where: any = {};
 
-        if (filter === 'available') {
-            where.status = 'available';
-        } else if (filter === 'reserved') {
-            where.status = 'reserved';
+        switch (filter) {
+            case 'available':
+                where.status = 'available';
+                break;
+            case 'reserved':
+                where.status = 'reserved';
+                break;
+            default:
+                break;
         }
 
-        if (search) {
-            where.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-            ];
+        if (search && typeof search === 'string') {
+            const term = search.trim();
+            if (term.length > 0) {
+                where.OR = [
+                    { name: { contains: term, mode: 'insensitive' } },
+                    { description: { contains: term, mode: 'insensitive' } },
+                ];
+            }
         }
 
-        const [gifts, total] = await Promise.all([
-            this.prisma.gift.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { name: 'asc' },
-            }),
-            this.prisma.gift.count({ where }),
-        ]);
+        try {
+            const [gifts, total] = await Promise.all([
+                this.prisma.gift.findMany({
+                    where,
+                    skip,
+                    take: limit,
+                    orderBy: { name: 'asc' },
+                }),
+                this.prisma.gift.count({ where }),
+            ]);
 
-        const result = {
-            data: gifts,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-        };
+            const result = {
+                data: gifts.map(gift => ({
+                    ...gift,
+                    imageUrl: gift.imageUrl ?? null,
+                    reservedBy: gift.reservedBy ?? null,
+                })),
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
 
-        // Salva no cache por 2 horas (7200 segundos)
-        await this.cacheService.set(cacheKey, result, 7200);
-
-        return result;
+            await this.cacheService.set(cacheKey, result, 7200); // 2 horas
+            return result;
+        } catch (error) {
+            console.error('Erro na busca paginada:', error);
+            throw new Error('Falha ao carregar lista paginada');
+        }
     }
 
     // Busca todos os presentes (do cache ou do banco)
@@ -89,8 +97,12 @@ export class GiftsService {
         if (cached) return cached;
 
         console.log('Cache não encontrado. Buscando do banco...');
+        const gifts = await this.findAllFromDb();
 
-        return this.findAllFromDb(); // Retorna imediatamente do DB
+        // Atualiza o cache com os dados frescos
+        await this.cacheService.set(this.cacheKey, gifts, 3600); // TTL: 1 hora
+
+        return gifts;
     }
 
     // Busca do banco de dados em background
@@ -100,9 +112,7 @@ export class GiftsService {
                 orderBy: { createdAt: 'desc' },
             });
 
-            // Atualiza o cache em segundo plano
             this.updateCacheInBackground();
-
             return gifts.map((gift) => ({
                 ...gift,
                 imageUrl: gift.imageUrl ?? null,
@@ -120,9 +130,9 @@ export class GiftsService {
             const freshData = await this.prisma.gift.findMany({
                 orderBy: { createdAt: 'desc' },
             });
-            await this.cacheService.set(this.cacheKey, freshData, 3600); // TTL: 1 hora
+            await this.cacheService.set(this.cacheKey, freshData, 3600);
         } catch (error) {
-            console.error('Erro ao atualizar cache em background:', error);
+            console.warn('Erro ao atualizar cache em background:', error.message);
         }
     }
 

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { url } from 'inspector';
 
 @Module({
     imports: [

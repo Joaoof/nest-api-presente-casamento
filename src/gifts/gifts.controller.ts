@@ -93,11 +93,13 @@ export class GiftsController {
     @ApiResponse({
         status: HttpStatus.OK,
         description: 'Lista de presentes retornada com sucesso',
-        type: [GiftResponseDto],
+        type: [GiftResponseDto],    
     })
     @Get()
     async findAll(): Promise<GiftResponseDto[]> {
         const gifts = await this.giftsService.findAll();
+        console.log(gifts);
+
         return gifts.map(gift => ({
             ...gift,
             imageUrl: gift.imageUrl ?? undefined,
