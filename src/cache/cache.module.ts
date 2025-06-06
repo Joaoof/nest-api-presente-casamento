@@ -26,4 +26,4 @@ import { url } from 'inspector';
     exports: [CacheService], // Exporta o serviço pra outros módulos usarem
 
 })
-export class CacheModule { }
+export class CacheModuleRedis { }

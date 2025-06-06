@@ -9,6 +9,7 @@ import {
     Delete,
     UseGuards,
     HttpStatus,
+    Query,
 } from '@nestjs/common';
 import { GiftsService } from './gifts.service';
 import { CreateGiftDto } from './dto/create-gift.dto';
@@ -22,15 +23,43 @@ import {
     ApiResponse,
     ApiBody,
     ApiParam,
+    ApiQuery,
 } from '@nestjs/swagger';
 import { Request as ReqDecorator } from '@nestjs/common';
 import { ReserveGuestDto } from './dto/reserve-guest.dto';
 import { CacheService } from 'src/cache/cache.service';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+
 
 @ApiTags('gifts')
 @Controller('gifts')
 export class GiftsController {
     constructor(private readonly giftsService: GiftsService, private readonly cacheService: CacheService) { }
+
+    @Get('pagination')
+    @CacheTTL(86400) // Cache por 24 horas
+    @ApiResponse({
+        status: 200,
+        description: 'Lista de presentes paginada e filtrada',
+    })
+    @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página (começa em 1)' })
+    @ApiQuery({ name: 'limit', required: false, type: Number, example: 12, description: 'Quantidade de itens por página' })
+    @ApiQuery({ name: 'filter', required: false, enum: ['all', 'available', 'reserved'], default: 'all', description: 'Filtrar por status' })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Termo de busca pelo nome ou descrição do presente' })
+
+    async findAllPagination(
+        @Query('page') page = 1,
+        @Query('limit') limit = 12,
+        @Query('filter') filter: 'all' | 'available' | 'reserved' = 'all',
+        @Query('search') search = ''
+    ) {
+        return this.giftsService.findAllPaginated({
+            page,
+            limit,
+            filter,
+            search,
+        });
+    }
 
     @Post()
     @UseGuards(JwtAuthGuard)

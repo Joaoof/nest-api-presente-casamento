@@ -20,6 +20,69 @@ export class GiftsService {
         private readonly mailService: MailService,
     ) { }
 
+    async findAllPaginated(params: {
+        page: number | string;
+        limit: number | string;
+        filter: 'all' | 'available' | 'reserved';
+        search?: string;
+    }) {
+        const page = parseInt(`${params.page}`, 10) || 1;
+        const limit = parseInt(`${params.limit}`, 10) || 12;
+        const { filter, search } = params;
+
+        // Chave única para o cache
+        const cacheKey = `gifts_pagination:${page}:${limit}:${filter}:${search || 'none'}`;
+
+        // Verifica se existe no cache
+        const cachedData = await this.cacheService.get<any>(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
+
+        // Se não tiver no cache, busca no banco
+        const skip = (page - 1) * limit;
+
+        let where: any = {};
+
+        if (filter === 'available') {
+            where.status = 'available';
+        } else if (filter === 'reserved') {
+            where.status = 'reserved';
+        }
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        const [gifts, total] = await Promise.all([
+            this.prisma.gift.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { name: 'asc' },
+            }),
+            this.prisma.gift.count({ where }),
+        ]);
+
+        const result = {
+            data: gifts,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+
+        // Salva no cache por 2 horas (7200 segundos)
+        await this.cacheService.set(cacheKey, result, 7200);
+
+        return result;
+    }
+
     // Busca todos os presentes (do cache ou do banco)
     async findAll(): Promise<Gift[]> {
         const cached = await this.cacheService.get<Gift[]>(this.cacheKey);

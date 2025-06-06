@@ -14,7 +14,6 @@ async function bootstrap() {
     origin: '*', // ou use '*' para permitir qualquer origem (apenas em dev!)
     credentials: true, // se estiver usando cookies/autenticação
   });
-
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   cron.schedule('*/30 * * * *', async () => {
