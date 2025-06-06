@@ -1,5 +1,3 @@
-// src/gifts/gifts.service.ts
-
 import {
     Injectable,
     NotFoundException,
@@ -19,48 +17,58 @@ export class GiftsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService,
-        private readonly mailService: MailService, // 👈 novo
-
+        private readonly mailService: MailService,
     ) { }
 
-    // 🔁 Busca do banco de dados
-    async findAllFromDb(): Promise<Gift[]> {
-        const gifts = await this.prisma.gift.findMany({
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-
-        console.log(gifts);
-
-
-        return gifts.map((gift) => ({
-            ...gift,
-            imageUrl: gift.imageUrl ?? null,
-            reservedBy: gift.reservedBy ?? null,
-        }));
-    }
-
-    // 🚀 Retorna os presentes (do cache ou do banco)
+    // Busca todos os presentes (do cache ou do banco)
     async findAll(): Promise<Gift[]> {
         const cached = await this.cacheService.get<Gift[]>(this.cacheKey);
         if (cached) return cached;
 
-        console.log('Cache não encontrado, buscando do banco de dados...', cached);
+        console.log('Cache não encontrado. Buscando do banco...');
 
-
-        const gifts = await this.findAllFromDb();
-        await this.cacheService.set(this.cacheKey, gifts, 60); // TTL de 60 segundos
-        return gifts;
+        return this.findAllFromDb(); // Retorna imediatamente do DB
     }
 
+    // Busca do banco de dados em background
+    async findAllFromDb(): Promise<Gift[]> {
+        try {
+            const gifts = await this.prisma.gift.findMany({
+                orderBy: { createdAt: 'desc' },
+            });
 
-    // 💡 Invalida o cache quando necessário
+            // Atualiza o cache em segundo plano
+            this.updateCacheInBackground();
+
+            return gifts.map((gift) => ({
+                ...gift,
+                imageUrl: gift.imageUrl ?? null,
+                reservedBy: gift.reservedBy ?? null,
+            }));
+        } catch (error) {
+            console.error('Erro ao buscar presentes do banco:', error);
+            throw new Error('Falha ao carregar lista de presentes');
+        }
+    }
+
+    // Atualiza o cache em background (não bloqueia a resposta)
+    private async updateCacheInBackground() {
+        try {
+            const freshData = await this.prisma.gift.findMany({
+                orderBy: { createdAt: 'desc' },
+            });
+            await this.cacheService.set(this.cacheKey, freshData, 3600); // TTL: 1 hora
+        } catch (error) {
+            console.error('Erro ao atualizar cache em background:', error);
+        }
+    }
+
+    // Invalida o cache quando necessário
     private async invalidateCache() {
         await this.cacheService.del(this.cacheKey);
     }
 
-    // 🔍 Busca presente por ID
+    // Busca presente por ID
     async findOne(id: string): Promise<Gift> {
         const gift = await this.prisma.gift.findUnique({ where: { id } });
         if (!gift) {
@@ -69,19 +77,17 @@ export class GiftsService {
         return gift;
     }
 
-    // ✅ Cria um novo presente
-    async create(createGiftDto: CreateGiftDto, adminId: string) {
+    // Cria um novo presente
+    async create(createGiftDto: CreateGiftDto, adminId: string): Promise<Gift> {
         try {
             const gift = await this.prisma.gift.create({
                 data: {
                     ...createGiftDto,
-                    admin: {
-                        connect: { id: adminId },
-                    },
+                    admin: { connect: { id: adminId } },
                 },
             });
 
-            await this.invalidateCache(); // Limpa o cache após criar
+            await this.invalidateCache();
             return gift;
         } catch (error) {
             console.error('Erro ao criar presente:', error);
@@ -89,46 +95,51 @@ export class GiftsService {
         }
     }
 
-    // ✏️ Atualiza um presente existente
-    async update(id: string, updateGiftDto: UpdateGiftDto) {
+    // Atualiza um presente existente
+    async update(id: string, updateGiftDto: UpdateGiftDto): Promise<Gift> {
         try {
-            const updated = await this.prisma.gift.update({
+            const updatedGift = await this.prisma.gift.update({
                 where: { id },
                 data: updateGiftDto,
             });
 
-            await this.invalidateCache(); // Limpa o cache após atualizar
-            return updated;
+            await this.invalidateCache();
+            return updatedGift;
         } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2025') {
-                    throw new NotFoundException(`Presente com ID ${id} não encontrado`);
-                }
+            if (
+                error instanceof Prisma.PrismaClientKnownRequestError &&
+                error.code === 'P2025'
+            ) {
+                throw new NotFoundException(`Presente com ID ${id} não encontrado`);
             }
-            console.error('Erro no update:', error);
+
+            console.error('Erro ao atualizar presente:', error);
             throw new Error('Erro ao atualizar o presente');
         }
     }
 
-    // 🗑️ Remove um presente
-    async remove(id: string) {
+    // Remove um presente
+    async remove(id: string): Promise<Gift> {
         try {
-            const removed = await this.prisma.gift.delete({ where: { id } });
-            await this.invalidateCache(); // Limpa o cache após excluir
-            return removed;
+            const removedGift = await this.prisma.gift.delete({ where: { id } });
+
+            await this.invalidateCache();
+            return removedGift;
         } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2025') {
-                    throw new NotFoundException(`Presente com ID ${id} não encontrado`);
-                }
+            if (
+                error instanceof Prisma.PrismaClientKnownRequestError &&
+                error.code === 'P2025'
+            ) {
+                throw new NotFoundException(`Presente com ID ${id} não encontrado`);
             }
+
             console.error('Erro ao remover presente:', error);
             throw new Error('Falha ao excluir presente');
         }
     }
 
-    // 🛒 Reserva um presente
-    async reserveGift(id: string, reservedBy: string) {
+    // Reserva um presente
+    async reserveGift(id: string, reservedBy: string): Promise<Gift> {
         const gift = await this.findOne(id);
 
         if (gift.status === 'reserved') {
@@ -143,15 +154,16 @@ export class GiftsService {
             },
         });
 
-        // ✂️ Extrair e-mail de "Nome <email@x.com>"
-        const match = reservedBy.match(/<(.*)>/);
+        // Extrai o email do formato "Nome <email@example.com>"
+        const match = reservedBy.match(/<(.+?)>/);
         const email = match?.[1];
 
         if (email) {
-            await this.mailService.sendMail({
-                to: email,
-                subject: `Você reservou: ${updatedGift.name}`,
-                html: `
+            try {
+                await this.mailService.sendMail({
+                    to: email,
+                    subject: `Você reservou: ${updatedGift.name}`,
+                    html: `
                 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -414,11 +426,20 @@ export class GiftsService {
 </body>
 </html>
       `,
-            });
+                });
+            } catch (mailError) {
+                console.error('Erro ao enviar e-mail de reserva:', mailError);
+                // Não interrompe a operação mesmo se o e-mail falhar
+            }
         }
 
         await this.invalidateCache();
         return updatedGift;
     }
 
+    async refreshCache() {
+        const gifts = await this.findAllFromDb();
+        await this.cacheService.set(this.cacheKey, gifts, 3600); // TTL de 1 hora
+        return { message: 'Cache atualizado!' };
+    }
 }

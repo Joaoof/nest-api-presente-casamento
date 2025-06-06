@@ -25,11 +25,12 @@ import {
 } from '@nestjs/swagger';
 import { Request as ReqDecorator } from '@nestjs/common';
 import { ReserveGuestDto } from './dto/reserve-guest.dto';
+import { CacheService } from 'src/cache/cache.service';
 
 @ApiTags('gifts')
 @Controller('gifts')
 export class GiftsController {
-    constructor(private readonly giftsService: GiftsService) { }
+    constructor(private readonly giftsService: GiftsService, private readonly cacheService: CacheService) { }
 
     @Post()
     @UseGuards(JwtAuthGuard)
@@ -165,5 +166,12 @@ export class GiftsController {
             imageUrl: reservedGift.imageUrl ?? undefined,
             reservedBy: reservedGift.reservedBy ?? undefined,
         };
+    }
+
+    @Get('refresh-cache')
+    // @ApiBearerAuth()        <-- comentar/remover
+    // @UseGuards(JwtAuthGuard) <-- comentar/remover
+    async refreshCache() {
+        return this.giftsService.refreshCache(); // Delega pro service
     }
 }
