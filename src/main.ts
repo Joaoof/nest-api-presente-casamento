@@ -11,8 +11,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: '*', // ou use '*' para permitir qualquer origem (apenas em dev!)
-    credentials: true, // se estiver usando cookies/autenticação
+    origin: 'https://vemprocasorio.netlify.app',  // seu frontend em produção
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
