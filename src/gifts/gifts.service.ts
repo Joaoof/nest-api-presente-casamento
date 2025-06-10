@@ -236,8 +236,7 @@ export class GiftsService {
                 await this.mailService.sendMail({
                     to: email,
                     subject: `Você reservou: ${updatedGift.name}`,
-                    html: `
-                <!DOCTYPE html>
+                    html: `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -252,7 +251,7 @@ export class GiftsService {
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f4f5f7; /* Fundo suave */
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -262,56 +261,41 @@ export class GiftsService {
 
         .confirmation-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
             width: 100%;
             overflow: hidden;
             position: relative;
+            padding: 20px;
         }
 
         .header {
-            background: linear-gradient(135deg, #ff6b6b, #ffa726);
-            color: white;
-            padding: 30px;
             text-align: center;
-            position: relative;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+            margin-bottom: 20px;
         }
 
         .header h2 {
-            font-size: 2.2em;
+            font-size: 2em;
+            color: #333;
             margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
         }
 
         .gift-icon {
             font-size: 3em;
+            color: #ff9f43; /* Cor laranja vibrante */
             margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
         }
 
         .content {
-            padding: 40px 30px;
+            padding: 0 20px;
         }
 
         .gift-info {
-            background: #f8f9ff;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-left: 5px solid #667eea;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
         .gift-name {
@@ -340,7 +324,7 @@ export class GiftsService {
         .info-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #ff9f43; /* Cor laranja vibrante */
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -369,49 +353,33 @@ export class GiftsService {
         }
 
         .thank-you {
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
+            background: #fff;
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 8px;
             text-align: center;
             font-size: 1.1em;
             line-height: 1.6;
-            position: relative;
-            overflow: hidden;
         }
 
-        .thank-you::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.05) 10px,
-                rgba(255,255,255,0.05) 20px
-            );
-            animation: shine 3s linear infinite;
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
         }
 
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        .cta-button {
+            display: inline-block;
+            background: #ff9f43; /* Cor laranja vibrante */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.3s ease;
         }
 
-        .celebration-emoji {
-            font-size: 1.3em;
-            margin-left: 5px;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+        .cta-button:hover {
+            background: #e67e22; /* Sombra laranja mais escura */
         }
 
         @media (max-width: 480px) {
@@ -491,14 +459,17 @@ export class GiftsService {
             <div class="thank-you">
                 <strong>Obrigado por contribuir com o nosso casamento!</strong>
                 <br>
-                Sua generosidade torna este momento ainda mais especial
-                <span class="celebration-emoji">💕</span>
+                Sua generosidade torna este momento ainda mais especial.
+            </div>
+
+            <!-- Botão de Ação -->
+            <div class="button-container">
+                <a href="https://www.nossalar.com.br"  class="cta-button">Visitar Loja</a>
             </div>
         </div>
     </div>
 </body>
-</html>
-      `,
+</html>`,
                 });
             } catch (mailError) {
                 console.error('Erro ao enviar e-mail de reserva:', mailError);
