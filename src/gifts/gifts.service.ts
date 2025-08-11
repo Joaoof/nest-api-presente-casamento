@@ -359,7 +359,7 @@ body {
             <p>Sua generosidade torna este momento ainda mais especial.</p>
         </div>
         <p style="text-align:center;">
-            <a class="button" href="https://www.nossalar.com.br">Visitar Loja</a>
+            <a class="button" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxASkbCxrIE51qABWD9vLiwnb9MPxZ2ql6Lg&s">Visitar Loja</a>
         </p>
     </div>
     <div class="footer">
