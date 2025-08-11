@@ -299,6 +299,19 @@ body {
     border-left: 4px solid #3483fa;
     margin-bottom: 20px;
 }
+
+.info { margin-bottom: 10px; }
+.info strong { display: block; font-size: 12px; color: #666; }
+.description {
+    background: #fff;
+    border-left: 4px solid #3483fa;
+    padding: 10px 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555;
+    margin-top: 10px;
+    border-radius: 4px;
+}
 .button {
     display: inline-block;
     background: #3483fa;
@@ -319,7 +332,7 @@ body {
 <body>
 <div class="container">
     <div class="header">
-        <img src="https://via.placeholder.com/200x60?text=Nossa+Lar" alt="Nossa Lar Logo">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxASkbCxrIE51qABWD9vLiwnb9MPxZ2ql6Lg&s" alt="Nossa Lar Logo">
         <h1>Presente Reservado!</h1>
         <p>Sua reserva foi confirmada com sucesso</p>
     </div>
@@ -330,6 +343,9 @@ body {
             <h3>${updatedGift.name}</h3>
             <div class="info">
                 <strong>Loja</strong> Nossa Lar
+            </div>
+            <div class="description">
+                ${updatedGift.description}
             </div>
             <div class="info">
                 <strong>Endereço</strong> Araguaína-TO
@@ -350,6 +366,7 @@ body {
         <p>Este e-mail confirma a reserva do seu presente.</p>
         <p>Em caso de dúvidas, entre em contato conosco.</p>
         <p><strong>Nossa Lar</strong></p>
+        <p>A BASE DE PREÇO É A VISTA, NO CARTÃO VAI TER OS JUROS</p>
     </div>
 </div>
 </body>
