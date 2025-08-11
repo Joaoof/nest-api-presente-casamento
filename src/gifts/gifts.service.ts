@@ -248,228 +248,320 @@ export class GiftsService {
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f5f7; /* Fundo suave */
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #ebebeb;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 20px 0;
         }
-
-        .confirmation-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        
+        .email-container {
             max-width: 600px;
-            width: 100%;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 6px;
             overflow: hidden;
-            position: relative;
-            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }
-
+        
         .header {
+            background: linear-gradient(135deg, #3483fa 0%, #2968c8 100%);
+            padding: 30px 40px;
             text-align: center;
-            margin-bottom: 20px;
+            color: white;
         }
-
-        .header h2 {
-            font-size: 2em;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .gift-icon {
-            font-size: 3em;
-            color: #ff9f43; /* Cor laranja vibrante */
-            margin-bottom: 15px;
-        }
-
-        .content {
-            padding: 0 20px;
-        }
-
-        .gift-info {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .gift-name {
-            font-size: 1.4em;
-            color: #2d3748;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 12px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .info-icon {
-            width: 40px;
-            height: 40px;
-            background: #ff9f43; /* Cor laranja vibrante */
+        
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255,255,255,0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .status-banner {
+            background-color: #00a650;
             color: white;
-            font-size: 1.1em;
-            margin-right: 15px;
+            padding: 12px 40px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .gift-card {
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+            background-color: #fafafa;
+        }
+        
+        .gift-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+        
+        .gift-title-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #fff159;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .gift-title h2 {
+            font-size: 20px;
+            color: #333333;
+            font-weight: 600;
+        }
+        
+        .info-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #3483fa;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
             flex-shrink: 0;
         }
-
-        .info-content {
+        
+        .info-details {
             flex: 1;
         }
-
+        
         .info-label {
-            font-size: 0.9em;
-            color: #718096;
-            margin-bottom: 2px;
-            font-weight: 500;
+            font-size: 12px;
+            color: #666666;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
         }
-
+        
         .info-value {
-            font-size: 1.1em;
-            color: #2d3748;
+            font-size: 16px;
+            color: #333333;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        
+        .thank-you-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-left: 4px solid #3483fa;
+        }
+        
+        .thank-you-section h3 {
+            font-size: 20px;
+            color: #333333;
+            margin-bottom: 12px;
             font-weight: 600;
         }
-
-        .thank-you {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.1em;
+        
+        .thank-you-section p {
+            font-size: 16px;
+            color: #666666;
             line-height: 1.6;
+            font-weight: 400;
         }
-
-        .button-container {
+        
+        .cta-section {
             text-align: center;
-            margin-top: 20px;
         }
-
+        
         .cta-button {
             display: inline-block;
-            background: #ff9f43; /* Cor laranja vibrante */
+            background: linear-gradient(135deg, #3483fa 0%, #2968c8 100%);
             color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1em;
+            padding: 16px 32px;
+            border-radius: 6px;
+            font-size: 16px;
             font-weight: 600;
             text-decoration: none;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(52, 131, 250, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
+        
         .cta-button:hover {
-            background: #e67e22; /* Sombra laranja mais escura */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 131, 250, 0.4);
         }
-
-        @media (max-width: 480px) {
-            .confirmation-card {
-                margin: 10px;
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #e6e6e6;
+        }
+        
+        .footer p {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.6;
+        }
+        
+        .footer-logo {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0 10px;
             }
             
-            .header {
-                padding: 25px 20px;
-            }
-            
-            .content {
-                padding: 30px 20px;
-            }
-            
-            .gift-info {
+            .header, .content, .footer {
                 padding: 20px;
             }
             
-            .header h2 {
-                font-size: 1.8em;
+            .header h1 {
+                font-size: 24px;
             }
-        }
-
-        .status-badge {
-            display: inline-block;
-            background: #48bb78;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            margin-top: 10px;
+            
+            .gift-card {
+                padding: 20px;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .info-icon {
+                align-self: flex-start;
+            }
+            
+            .thank-you-section {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="confirmation-card">
+    <div class="email-container">
+         Header 
         <div class="header">
-            <div class="gift-icon">🎁</div>
-            <h2>Presente Reservado!</h2>
-            <div class="status-badge">✓ Confirmado</div>
+            <div class="header-icon">🎁</div>
+            <h1>Presente Reservado!</h1>
+            <p>Sua reserva foi confirmada com sucesso</p>
         </div>
         
+         Status Banner 
+        <div class="status-banner">
+            ✓ Confirmado
+        </div>
+        
+         Content 
         <div class="content">
-            <div class="gift-info">
-                <div class="gift-name">
-                    <span>🎀</span>
-                    <span>${updatedGift.name}</span>
+             Gift Information Card 
+            <div class="gift-card">
+                <div class="gift-title">
+                    <div class="gift-title-icon">🎀</div>
+                    <h2>${updatedGift.name}</h2>
                 </div>
                 
-                <div class="info-item">
-                    <div class="info-icon">🏪</div>
-                    <div class="info-content">
-                        <div class="info-label">Loja</div>
-                        <div class="info-value">Nossa Lar</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-icon">🏪</div>
+                        <div class="info-details">
+                            <div class="info-label">Loja</div>
+                            <div class="info-value">Nossa Lar</div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="info-item">
-                    <div class="info-icon">📍</div>
-                    <div class="info-content">
-                        <div class="info-label">Endereço</div>
-                        <div class="info-value">Araguaína-TO</div>
+                    
+                    <div class="info-row">
+                        <div class="info-icon">📍</div>
+                        <div class="info-details">
+                            <div class="info-label">Endereço</div>
+                            <div class="info-value">Araguaína-TO</div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="info-item">
-                    <div class="info-icon">👤</div>
-                    <div class="info-content">
-                        <div class="info-label">Vendedor Responsável</div>
-                        <div class="info-value">Teste</div>
+                    
+                    <div class="info-row">
+                        <div class="info-icon">👤</div>
+                        <div class="info-details">
+                            <div class="info-label">Vendedor Responsável</div>
+                            <div class="info-value">Teste</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="thank-you">
-                <strong>Obrigado por contribuir com o nosso casamento!</strong>
-                <br>
-                Sua generosidade torna este momento ainda mais especial.
+             Thank You Section 
+            <div class="thank-you-section">
+                <h3>Obrigado por contribuir com o nosso casamento!</h3>
+                <p>Sua generosidade torna este momento ainda mais especial.</p>
             </div>
-
-            <!-- Botão de Ação -->
-            <div class="button-container">
-                <a href="https://www.nossalar.com.br"  class="cta-button">Visitar Loja</a>
+            
+             Call to Action 
+            <div class="cta-section">
+                <a href="https://www.nossalar.com.br" class="cta-button">Visitar Loja</a>
             </div>
+        </div>
+        
+         Footer 
+        <div class="footer">
+            <p>Este e-mail foi enviado para confirmar a reserva do seu presente.</p>
+            <p>Em caso de dúvidas, entre em contato conosco.</p>
+            <div class="footer-logo">Nossa Lar</div>
         </div>
     </div>
 </body>
-</html>`,
+</html>
+`,
                 });
             } catch (mailError) {
                 console.error('Erro ao enviar e-mail de reserva:', mailError);
