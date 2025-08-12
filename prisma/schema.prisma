@@ -23,6 +23,17 @@ model Gift {
   admin       Admin    @relation(fields: [adminId], references: [id])
 
   @@map("gifts")
+
+  // ✅ Índices com ordenação correta
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@index([name(sort: Asc)])
+  @@index([status, createdAt(sort: Desc)])
+
+  // ✅ Nome personalizado (map) e tipo (type)
+  @@index([name], map: "idx_gifts_name_asc", type: BTree)
+
+  // Para busca full-text, ainda precisa de SQL (ver abaixo)
 }
 model Admin {
   id       String @id @default(uuid())

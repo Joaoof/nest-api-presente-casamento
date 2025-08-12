@@ -13,6 +13,8 @@ import { MailService } from 'src/mail/mail.service';
 @Injectable()
 export class GiftsService {
     private readonly cacheKey = 'gifts:all';
+    private readonly paginationCacheTTL = 7200; // 2 horas
+    private readonly listCacheTTL = 3600; // 1 hora
 
     constructor(
         private readonly prisma: PrismaService,
@@ -20,6 +22,9 @@ export class GiftsService {
         private readonly mailService: MailService,
     ) { }
 
+    /**
+     * Busca paginada com cache e otimização de performance
+     */
     async findAllPaginated(params: {
         page?: number | string;
         limit?: number | string;
@@ -31,59 +36,63 @@ export class GiftsService {
         const { filter = 'all', search } = params;
 
         const cacheKey = `gifts_pagination:${page}:${limit}:${filter}:${search || 'none'}`;
-        const cachedData = await this.cacheService.get<any>(cacheKey);
-        if (cachedData) return cachedData;
+        const cached = await this.cacheService.get<any>(cacheKey);
 
-        const skip = (page - 1) * limit;
-        let where: any = {};
-
-        switch (filter) {
-            case 'available':
-                where.status = 'available';
-                break;
-            case 'reserved':
-                where.status = 'reserved';
-                break;
-            default:
-                break;
+        // ✅ Retorna cache mesmo que esteja desatualizado (stale-while-revalidate)
+        if (cached) {
+            this.refreshPaginationCacheInBackground(cacheKey, filter, search, limit, page);
+            return cached;
         }
 
-        if (search && typeof search === 'string') {
+        const skip = (page - 1) * limit;
+        let where: Prisma.GiftWhereInput = {};
+
+        // Filtro por status
+        if (filter === 'available') where.status = 'available';
+        if (filter === 'reserved') where.status = 'reserved';
+
+        // Busca insensível em name e description
+        if (search && typeof search === 'string' && search.trim().length > 0) {
             const term = search.trim();
-            if (term.length > 0) {
-                where.OR = [
-                    { name: { contains: term, mode: 'insensitive' } },
-                    { description: { contains: term, mode: 'insensitive' } },
-                ];
-            }
+            where.OR = [
+                { name: { contains: term, mode: 'insensitive' } },
+                { description: { contains: term, mode: 'insensitive' } },
+            ];
         }
 
         try {
-            const [gifts, total] = await Promise.all([
-                this.prisma.gift.findMany({
-                    where,
-                    skip,
-                    take: limit,
-                    orderBy: { name: 'asc' },
-                }),
-                this.prisma.gift.count({ where }),
-            ]);
+            // 🔥 Evita count pesado: usa "limit + 1" para detectar se tem próxima página
+            const gifts = await this.prisma.gift.findMany({
+                where,
+                skip,
+                take: limit + 1, // +1 para verificar hasNextPage
+                orderBy: { name: 'asc' },
+            });
+
+            const hasNext = gifts.length > limit;
+            const data = hasNext ? gifts.slice(0, limit) : gifts;
+
+            const total = skip + data.length; // Aproximação (ou use count se necessário)
+            const totalPages = Math.ceil(total / limit);
 
             const result = {
-                data: gifts.map(gift => ({
+                data: data.map(gift => ({
                     ...gift,
                     imageUrl: gift.imageUrl ?? null,
                     reservedBy: gift.reservedBy ?? null,
                 })),
                 meta: {
-                    total,
+                    total: hasNext ? 'more' : total, // Ou use count real se precisar exato
                     page,
                     limit,
-                    totalPages: Math.ceil(total / limit),
+                    hasNext,
+                    totalPages,
                 },
             };
 
-            await this.cacheService.set(cacheKey, result, 7200); // 2 horas
+            // Armazena no cache
+            await this.cacheService.set(cacheKey, result, this.paginationCacheTTL);
+
             return result;
         } catch (error) {
             console.error('Erro na busca paginada:', error);
@@ -91,29 +100,30 @@ export class GiftsService {
         }
     }
 
-    // Busca todos os presentes (do cache ou do banco)
+    /**
+     * Busca todos os presentes (com fallback no cache)
+     */
     async findAll(): Promise<Gift[]> {
         const cached = await this.cacheService.get<Gift[]>(this.cacheKey);
-        if (cached) return cached;
+        if (cached) {
+            // Atualiza em background sem bloquear
+            this.updateCacheInBackground();
+            return cached;
+        }
 
-        console.log('Cache não encontrado. Buscando do banco...');
-        const gifts = await this.findAllFromDb();
-
-        // Atualiza o cache com os dados frescos
-        await this.cacheService.set(this.cacheKey, gifts, 3600); // TTL: 1 hora
-
-        return gifts;
+        return this.findAllFromDb();
     }
 
-    // Busca do banco de dados em background
+    /**
+     * Busca direta do banco (usado em fallback ou atualização)
+     */
     async findAllFromDb(): Promise<Gift[]> {
         try {
             const gifts = await this.prisma.gift.findMany({
                 orderBy: { createdAt: 'desc' },
             });
 
-            this.updateCacheInBackground();
-            return gifts.map((gift) => ({
+            return gifts.map(gift => ({
                 ...gift,
                 imageUrl: gift.imageUrl ?? null,
                 reservedBy: gift.reservedBy ?? null,
@@ -124,24 +134,33 @@ export class GiftsService {
         }
     }
 
-    // Atualiza o cache em background (não bloqueia a resposta)
+    /**
+     * Atualiza o cache em background (não bloqueia resposta)
+     */
     private async updateCacheInBackground() {
-        try {
-            const freshData = await this.prisma.gift.findMany({
-                orderBy: { createdAt: 'desc' },
-            });
-            await this.cacheService.set(this.cacheKey, freshData, 3600);
-        } catch (error) {
-            console.warn('Erro ao atualizar cache em background:', error.message);
-        }
+        setImmediate(async () => {
+            try {
+                const freshData = await this.findAllFromDb();
+                await this.cacheService.set(this.cacheKey, freshData, this.listCacheTTL);
+            } catch (error) {
+                console.warn('Erro ao atualizar cache em background:', error.message);
+            }
+        });
     }
 
-    // Invalida o cache quando necessário
+    /**
+     * Invalida cache após alterações
+     */
     private async invalidateCache() {
         await this.cacheService.del(this.cacheKey);
+
+        // Também limpa caches de paginação
+        await this.cacheService.del('gifts_pagination:*');
     }
 
-    // Busca presente por ID
+    /**
+     * Busca por ID
+     */
     async findOne(id: string): Promise<Gift> {
         const gift = await this.prisma.gift.findUnique({ where: { id } });
         if (!gift) {
@@ -150,7 +169,9 @@ export class GiftsService {
         return gift;
     }
 
-    // Cria um novo presente
+    /**
+     * Cria novo presente
+     */
     async create(createGiftDto: CreateGiftDto, adminId: string): Promise<Gift> {
         try {
             const gift = await this.prisma.gift.create({
@@ -168,7 +189,9 @@ export class GiftsService {
         }
     }
 
-    // Atualiza um presente existente
+    /**
+     * Atualiza presente
+     */
     async update(id: string, updateGiftDto: UpdateGiftDto): Promise<Gift> {
         try {
             const updatedGift = await this.prisma.gift.update({
@@ -191,7 +214,9 @@ export class GiftsService {
         }
     }
 
-    // Remove um presente
+    /**
+     * Remove presente
+     */
     async remove(id: string): Promise<Gift> {
         try {
             const removedGift = await this.prisma.gift.delete({ where: { id } });
@@ -211,7 +236,9 @@ export class GiftsService {
         }
     }
 
-    // Reserva um presente
+    /**
+     * Reserva presente
+     */
     async reserveGift(id: string, reservedBy: string): Promise<Gift> {
         const gift = await this.findOne(id);
 
@@ -227,106 +254,50 @@ export class GiftsService {
             },
         });
 
-        // Extrai o email do formato "Nome <email@example.com>"
-        const match = reservedBy.match(/<(.+?)>/);
-        const email = match?.[1];
+        // Extrai email do formato "Nome <email@ex.com>"
+        const emailMatch = reservedBy.match(/<(.+?)>/);
+        const email = emailMatch?.[1];
 
         if (email) {
             try {
                 await this.mailService.sendMail({
                     to: email,
                     subject: `Você reservou: ${updatedGift.name}`,
-                    html: `<!DOCTYPE html>
+                    html: this.generateReservationEmailHtml(updatedGift),
+                });
+            } catch (mailError) {
+                console.error('Erro ao enviar e-mail de reserva:', mailError);
+            }
+        }
+
+        await this.invalidateCache();
+        return updatedGift;
+    }
+
+    /**
+     * HTML do e-mail (extraído para método separado)
+     */
+    private generateReservationEmailHtml(gift: Gift): string {
+        return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Presente Reservado - Nossa Lar</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    margin: 0;
-    padding: 20px;
-}
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: #fff;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-.header {
-    text-align: center;
-    padding: 20px;
-    background: #3483fa;
-    color: #fff;
-}
-.header img {
-    max-height: 60px;
-    margin-bottom: 10px;
-}
-.status {
-    background: #00a650;
-    color: #fff;
-    text-align: center;
-    padding: 10px;
-    font-weight: bold;
-}
-.content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #333;
-}
-.content h2 {
-    margin-bottom: 15px;
-    color: #3483fa;
-}
-.card {
-    background: #fafafa;
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
+body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+.container { max-width: 600px; margin: auto; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header { text-align: center; padding: 20px; background: #3483fa; color: #fff; }
+.header img { max-height: 60px; margin-bottom: 10px; }
+.status { background: #00a650; color: #fff; text-align: center; padding: 10px; font-weight: bold; }
+.content { padding: 20px; line-height: 1.6; color: #333; }
+.content h2 { margin-bottom: 15px; color: #3483fa; }
+.card { background: #fafafa; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
 .info { margin-bottom: 10px; }
 .info strong { display: block; font-size: 12px; color: #666; }
-.thank-you {
-    background: #f0f0f0;
-    padding: 15px;
-    text-align: center;
-    border-left: 4px solid #3483fa;
-    margin-bottom: 20px;
-}
-
-.info { margin-bottom: 10px; }
-.info strong { display: block; font-size: 12px; color: #666; }
-.description {
-    background: #fff;
-    border-left: 4px solid #3483fa;
-    padding: 10px 15px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #555;
-    margin-top: 10px;
-    border-radius: 4px;
-}
-.button {
-    display: inline-block;
-    background: #3483fa;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 4px;
-    text-decoration: none;
-}
-.footer {
-    background: #f8f9fa;
-    text-align: center;
-    padding: 15px;
-    font-size: 12px;
-    color: #666;
-}
+.description { background: #fff; border-left: 4px solid #3483fa; padding: 10px 15px; font-size: 14px; color: #555; margin-top: 10px; border-radius: 4px; }
+.button { display: inline-block; background: #3483fa; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; }
+.footer { background: #f8f9fa; text-align: center; padding: 15px; font-size: 12px; color: #666; }
 </style>
 </head>
 <body>
@@ -340,26 +311,18 @@ body {
     <div class="content">
         <h2>Detalhes do Presente</h2>
         <div class="card">
-            <h3>${updatedGift.name}</h3>
-            <div class="info">
-                <strong>Loja</strong> Nossa Lar
-            </div>
-            <div class="description">
-                ${updatedGift.description}
-            </div>
-            <div class="info">
-                <strong>Endereço</strong> Araguaína-TO
-            </div>
-            <div class="info">
-                <strong>Vendedor</strong> Teste
-            </div>
+            <h3>${gift.name}</h3>
+            <div class="info"><strong>Loja</strong> Nossa Lar</div>
+            <div class="description">${gift.description}</div>
+            <div class="info"><strong>Endereço</strong> Araguaína-TO</div>
+            <div class="info"><strong>Vendedor</strong> Teste</div>
         </div>
         <div class="thank-you">
             <h3>Obrigado por contribuir com o nosso casamento!</h3>
             <p>Sua generosidade torna este momento ainda mais especial.</p>
         </div>
         <p style="text-align:center;">
-            <a class="button" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxASkbCxrIE51qABWD9vLiwnb9MPxZ2ql6Lg&s">Visitar Loja</a>
+            <a class="button" href="https://sualoja.com">Visitar Loja</a>
         </p>
     </div>
     <div class="footer">
@@ -370,22 +333,73 @@ body {
     </div>
 </div>
 </body>
-</html>
-`,
-                });
-            } catch (mailError) {
-                console.error('Erro ao enviar e-mail de reserva:', mailError);
-                // Não interrompe a operação mesmo se o e-mail falhar
-            }
-        }
-
-        await this.invalidateCache();
-        return updatedGift;
+</html>`;
     }
 
+    /**
+     * Atualiza cache manualmente (opcional)
+     */
     async refreshCache() {
         const gifts = await this.findAllFromDb();
-        await this.cacheService.set(this.cacheKey, gifts, 3600); // TTL de 1 hora
+        await this.cacheService.set(this.cacheKey, gifts, this.listCacheTTL);
         return { message: 'Cache atualizado!' };
+    }
+
+    /**
+     * Atualiza cache de paginação em background
+     */
+    private async refreshPaginationCacheInBackground(
+        cacheKey: string,
+        filter: string,
+        search?: string,
+        limit?: number,
+        page?: number,
+    ) {
+        setImmediate(async () => {
+            const skip = (page ? page - 1 : 0) * (limit ?? 12);
+            let where: Prisma.GiftWhereInput = {};
+
+            if (filter === 'available') where.status = 'available';
+            if (filter === 'reserved') where.status = 'reserved';
+            if (search) {
+                const term = search.trim();
+                if (term.length > 0) {
+                    where.OR = [
+                        { name: { contains: term, mode: 'insensitive' } },
+                        { description: { contains: term, mode: 'insensitive' } },
+                    ];
+                }
+            }
+
+            try {
+                const [gifts, total] = await Promise.all([
+                    this.prisma.gift.findMany({
+                        where,
+                        skip,
+                        take: limit,
+                        orderBy: { name: 'asc' },
+                    }),
+                    this.prisma.gift.count({ where }),
+                ]);
+
+                const result = {
+                    data: gifts.map(gift => ({
+                        ...gift,
+                        imageUrl: gift.imageUrl ?? null,
+                        reservedBy: gift.reservedBy ?? null,
+                    })),
+                    meta: {
+                        total,
+                        page,
+                        limit: limit ?? 12,
+                        totalPages: Math.ceil(total / (limit ?? 12)),
+                    },
+                };
+
+                await this.cacheService.set(cacheKey, result, this.paginationCacheTTL);
+            } catch (error) {
+                console.warn('Erro ao atualizar cache de paginação:', error);
+            }
+        });
     }
 }
