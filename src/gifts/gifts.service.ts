@@ -322,7 +322,7 @@ body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 
             <p>Sua generosidade torna este momento ainda mais especial.</p>
         </div>
         <p style="text-align:center;">
-            <a class="button" href="https://sualoja.com">Visitar Loja</a>
+            <a class="button" href="https://maps.app.goo.gl/ZbPTCr9dvPB6trNL6?g_st=ipc">Visitar Loja</a>
         </p>
     </div>
     <div class="footer">
