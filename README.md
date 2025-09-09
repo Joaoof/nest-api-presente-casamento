@@ -1,143 +1,119 @@
-<p align="center">
-  <a href="https://nestjs.com/" target="_blank">
-    <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" />
-  </a>
-</p>
+Claro\! Aqui está o conteúdo do arquivo no formato `.md`, ideal para um README no GitHub.
 
-<p align="center">
-  A progressive <a href="https://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.
-</p>
+-----
 
-<p align="center">
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank">
-    <img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" />
-  </a>
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank">
-    <img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" />
-  </a>
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank">
-    <img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" />
-  </a>
-  <a href="https://circleci.com/gh/nestjs/nest" target="_blank">
-    <img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" />
-  </a>
-  <a href="https://discord.gg/G7Qnnhy" target="_blank">
-    <img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord" />
-  </a>
-  <a href="https://opencollective.com/nest#backer" target="_blank">
-    <img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" />
-  </a>
-  <a href="https://opencollective.com/nest#sponsor" target="_blank">
-    <img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" />
-  </a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank">
-    <img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us" />
-  </a>
-  <a href="https://opencollective.com/nest#sponsor" target="_blank">
-    <img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us" />
-  </a>
-  <a href="https://twitter.com/nestframework" target="_blank">
-    <img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter" />
-  </a>
-</p>
+# NestJS: API de Gerenciamento de Reservas de Presentes
 
----
+\<p align="center"\>
+\<a href="[https://nestjs.com/](https://nestjs.com/)" target="\_blank"\>
+\<img src="[https://nestjs.com/img/logo-small.svg](https://nestjs.com/img/logo-small.svg)" width="120" alt="Nest Logo" /\>
+\</a\>
+\</p\>
 
-## 🚀 Project Overview
+\<p align="center"\>
+Um framework progressivo para \<a href="[https://nodejs.org](https://nodejs.org)" target="\_blank"\>Node.js\</a\>, ideal para construir aplicações de servidor eficientes e escaláveis.
+\</p\>
 
-This is a **NestJS backend API** for managing **gift reservations**, user authentication, email notifications, and caching. The application follows a modular architecture with clear separation of concerns.
+\<p align="center"\>
+\<a href="[https://www.npmjs.com/\~nestjscore](https://www.npmjs.com/~nestjscore)" target="\_blank"\>
+\<img src="[https://img.shields.io/npm/v/@nestjs/core.svg](https://img.shields.io/npm/v/@nestjs/core.svg)" alt="Versão NPM" /\>
+\</a\>
+\<a href="[https://www.npmjs.com/\~nestjscore](https://www.npmjs.com/~nestjscore)" target="\_blank"\>
+\<img src="[https://img.shields.io/npm/l/@nestjs/core.svg](https://img.shields.io/npm/l/@nestjs/core.svg)" alt="Licença do Pacote" /\>
+\</a\>
+\<a href="[https://www.npmjs.com/\~nestjscore](https://www.npmjs.com/~nestjscore)" target="\_blank"\>
+\<img src="[https://img.shields.io/npm/dm/@nestjs/common.svg](https://img.shields.io/npm/dm/@nestjs/common.svg)" alt="Downloads NPM" /\>
+\</a\>
+\<a href="[https://circleci.com/gh/nestjs/nest](https://circleci.com/gh/nestjs/nest)" target="\_blank"\>
+\<img src="[https://img.shields.io/circleci/build/github/nestjs/nest/master](https://img.shields.io/circleci/build/github/nestjs/nest/master)" alt="CircleCI" /\>
+\</a\>
+\<a href="[https://discord.gg/G7Qnnhy](https://discord.gg/G7Qnnhy)" target="\_blank"\>
+\<img src="[https://img.shields.io/badge/discord-online-brightgreen.svg](https://img.shields.io/badge/discord-online-brightgreen.svg)" alt="Discord" /\>
+\</a\>
+\</p\>
 
-### 🔧 Key Features
+-----
 
-- ✅ **Authentication & Authorization** using JWT
-- ✅ **Gift Management**: Create, update, list, and reserve gifts
-- ✅ **Email Notifications** via Nodemailer (Mail Module)
-- ✅ **Caching Layer** to improve performance
-- ✅ **TypeScript DTOs** for request/response validation
-- ✅ **Modular Structure** with clean separation of logic
-- ✅ **Swagger Documentation** (automatically generated)
+## 🚀 Visão Geral do Projeto
 
----
+Este é um **backend de API em NestJS** para gerenciar **reservas de presentes**, autenticação de usuários, notificações por e-mail e caching. A aplicação foi construída com uma arquitetura modular, garantindo uma clara separação de responsabilidades.
 
-## 📁 Project Structure
+## 🔧 Principais Funcionalidades
 
+  * **Autenticação e Autorização**: Sistema de login e acesso protegido por tokens JWT.
+  * **Gerenciamento de Presentes**: Funcionalidades completas (CRUD) para presentes, incluindo a capacidade de reservar.
+  * **Notificações por E-mail**: Envio de e-mails transacionais (via Nodemailer) para eventos como a confirmação de uma reserva.
+  * **Camada de Caching**: Implementação de cache para otimizar o desempenho e reduzir a carga no banco de dados.
+  * **Validação de Dados**: Uso de DTOs (Data Transfer Objects) com TypeScript para garantir a integridade dos dados de entrada e saída.
+  * **Estrutura Modular**: Organização do código em módulos coesos, facilitando a escalabilidade e a manutenção.
+  * **Documentação Automática**: Geração automática da documentação da API com o **Swagger**, permitindo fácil visualização e teste dos endpoints.
+
+## 📁 Estrutura do Projeto
+
+```
 src/
-├── auth/ # Authentication module (login, JWT)
-│ ├── dto/
-│ ├── guards/
-│ ├── strategies/
-│ ├── auth.controller.ts
-│ ├── auth.module.ts
-│ └── auth.service.ts
-│
-├── cache/ # Cache module (Redis or in-memory)
-│ ├── cache.module.ts
-│ └── cache.service.ts
-│
-├── gifts/ # Gift management module
-│ ├── dto/
-│ ├── gifts.controller.ts
-│ ├── gifts.module.ts
-│ └── gifts.service.ts
-│
-├── mail/ # Email notification module
-│ ├── mail.module.ts
-│ └── mail.service.ts
-│
-├── shared/ # Shared utilities and types
-│ ├── exceptions/
-│ └── types/
-│
+├── auth/           # Módulo de Autenticação (login, JWT, guards)
+├── cache/          # Módulo de Caching (Redis ou em memória)
+├── gifts/          # Módulo de Gerenciamento de Presentes
+├── mail/           # Módulo de Envio de E-mails
+├── shared/         # Utilitários e tipos compartilhados
 ├── app.controller.ts
 ├── app.module.ts
 ├── app.service.ts
 └── main.ts
-
-
----
-
-## 🛠️ Project Setup
-
-```bash
-# Install dependencies
-npm install
-
-# Development mode (with hot reload)
-npm run start:dev
-
-# Production build
-npm run start:prod
-
-# Run in watch mode
-npm run start:dev
 ```
 
-```bash
-PORT=3000
-JWT_SECRET=your_jwt_secret_key
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-REDIS_URL=redis://localhost:6379
-```
+## ⚙️ Configuração e Execução
 
-📚 Resources
-NestJS Documentation
-NestJS DevTools – Visualize your app structure
-NestJS Mau – Deploy to AWS easily
-Discord Community – Get help and share ideas
-💬 Support & Contact
-If you need support or have questions, feel free to reach out:
+### Pré-requisitos
 
-Discord: Join our community
-Twitter: @nestframework
-GitHub Issues: Report bugs or feature requests here
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+Certifique-se de ter o [Node.js](https://nodejs.org/) e o [NestJS CLI](https://docs.nestjs.com/cli/overview) instalados.
 
-👤 Author
-Joaoof – Developer
-GitHub Profile
-📧 Contact: joao@example.com (replace with your contact)
+### Passos
 
+1.  **Instale as dependências:**
+
+    ```bash
+    npm install
+    ```
+
+2.  **Crie e configure o arquivo `.env`:**
+
+    ```
+    PORT=3000
+    JWT_SECRET=sua_chave_secreta_jwt
+    EMAIL_HOST=smtp.gmail.com
+    EMAIL_PORT=587
+    EMAIL_USER=seu-email@gmail.com
+    EMAIL_PASS=sua-senha-de-aplicativo
+    REDIS_URL=redis://localhost:6379
+    ```
+
+    > **Atenção**: Nunca exponha chaves secretas e senhas em um repositório público. Use variáveis de ambiente para gerenciar essas informações de forma segura.
+
+3.  **Inicie a aplicação:**
+
+      * **Modo de desenvolvimento (com hot reload):**
+        ```bash
+        npm run start:dev
+        ```
+      * **Modo de produção (build otimizado):**
+        ```bash
+        npm run start:prod
+        ```
+
+## 📚 Recursos e Documentação
+
+  * [Documentação Oficial do NestJS](https://docs.nestjs.com/)
+  * [NestJS DevTools](https://www.google.com/search?q=https://github.com/nestjs/devtools) - Visualize a estrutura da sua aplicação.
+  * [Comunidade no Discord](https://discord.gg/G7Qnnhy) - Obtenha ajuda e compartilhe ideias.
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](https://www.google.com/search?q=LICENSE) para detalhes.
+
+## 👤 Autor
+
+  * **Nome:** João (Joaoof)
+  * **GitHub:** [João GitHub Profile](https://github.com/Joaoof)
+  * **Email:** joao@example.com
