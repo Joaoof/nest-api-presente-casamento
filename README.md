@@ -1,4 +1,4 @@
-# NestJS: API de Gerenciamento de Reservas de Presentes
+# API de Gerenciamento de Reservas de Presentes
 
 -----
 
