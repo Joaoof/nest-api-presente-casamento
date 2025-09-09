@@ -114,7 +114,7 @@ Se precisar de suporte ou tiver dúvidas, sinta-se à vontade para entrar em con
 
   * **Autor**: João (Joaoof)
   * **GitHub**: [João GitHub Profile](https://github.com/Joaoof)
-  * **Email**: joao@example.com
+  * **Email**: joaodeus400@gmail.com
 
 -----
 
