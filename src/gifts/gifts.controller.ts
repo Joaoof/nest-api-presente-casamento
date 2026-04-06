@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { Request as ReqDecorator } from '@nestjs/common';
 import { ReserveGuestDto } from './dto/reserve-guest.dto';
+import { UpdateGiftImageDto } from './dto/update-gift-image.dto';
 import { CacheService } from 'src/cache/cache.service';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
@@ -125,6 +126,33 @@ export class GiftsController {
             ...gift,
             imageUrl: gift.imageUrl === null ? undefined : gift.imageUrl,
             reservedBy: gift.reservedBy === null ? undefined : gift.reservedBy,
+        };
+    }
+
+    @Patch(':id/image')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Atualizar a imagem de um presente' })
+    @ApiParam({ name: 'id', description: 'ID do presente' })
+    @ApiBody({ type: UpdateGiftImageDto })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Imagem do presente atualizada com sucesso',
+        type: GiftResponseDto,
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Presente não encontrado',
+    })
+    async updateImage(
+        @Param('id') id: string,
+        @Body() body: UpdateGiftImageDto,
+    ): Promise<GiftResponseDto> {
+        const updatedGift = await this.giftsService.updateImage(id, body.imageUrl);
+        return {
+            ...updatedGift,
+            imageUrl: updatedGift.imageUrl === null ? undefined : updatedGift.imageUrl,
+            reservedBy: updatedGift.reservedBy === null ? undefined : updatedGift.reservedBy,
         };
     }
 

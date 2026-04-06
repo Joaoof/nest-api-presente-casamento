@@ -2,6 +2,7 @@ import {
     Injectable,
     NotFoundException,
     ConflictException,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { Gift, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -190,6 +191,31 @@ export class GiftsService {
     }
 
     /**
+     * Atualiza apenas a imagem de um presente
+     */
+    async updateImage(id: string, imageUrl: string): Promise<Gift> {
+        try {
+            const updatedGift = await this.prisma.gift.update({
+                where: { id },
+                data: { imageUrl },
+            });
+
+            await this.invalidateCache();
+            return updatedGift;
+        } catch (error) {
+            if (
+                error instanceof Prisma.PrismaClientKnownRequestError &&
+                error.code === 'P2025'
+            ) {
+                throw new NotFoundException(`Presente com ID ${id} não encontrado`);
+            }
+
+            console.error('Erro ao atualizar imagem do presente:', error);
+            throw new Error('Erro ao atualizar a imagem do presente');
+        }
+    }
+
+    /**
      * Atualiza presente
      */
     async update(id: string, updateGiftDto: UpdateGiftDto): Promise<Gift> {
@@ -275,61 +301,74 @@ export class GiftsService {
     }
 
     /**
-     * HTML do e-mail (extraído para método separado)
+     * HTML do e-mail (ATUALIZADO COM O TEMA DO CASAMENTO)
      */
     private generateReservationEmailHtml(gift: Gift): string {
+        // Renderiza a tag de imagem apenas se a URL da imagem existir no banco
+        const imageHtml = gift.imageUrl 
+            ? `<img src="${gift.imageUrl}" alt="${gift.name}" class="gift-image">` 
+            : ``;
+
+        // URL do WhatsApp pré-formatada. IMPORTANTE: Substitua '5500000000000' pelo número real.
+        const whatsappMsg = `Olá Luís e Vitória! Acabei de reservar o presente '${gift.name}' para o casamento de vocês!`;
+        const whatsappUrl = `https://wa.me/5500000000000?text=${encodeURIComponent(whatsappMsg)}`;
+
         return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Presente Reservado - Nossa Lar</title>
+<title>Presente Reservado - Luís e Vitória</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
-.container { max-width: 600px; margin: auto; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.header { text-align: center; padding: 20px; background: #3483fa; color: #fff; }
-.header img { max-height: 60px; margin-bottom: 10px; }
-.status { background: #00a650; color: #fff; text-align: center; padding: 10px; font-weight: bold; }
-.content { padding: 20px; line-height: 1.6; color: #333; }
-.content h2 { margin-bottom: 15px; color: #3483fa; }
-.card { background: #fafafa; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-.info { margin-bottom: 10px; }
-.info strong { display: block; font-size: 12px; color: #666; }
-.description { background: #fff; border-left: 4px solid #3483fa; padding: 10px 15px; font-size: 14px; color: #555; margin-top: 10px; border-radius: 4px; }
-.button { display: inline-block; background: #3483fa; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; }
-.footer { background: #f8f9fa; text-align: center; padding: 15px; font-size: 12px; color: #666; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F5F5DC; margin: 0; padding: 20px; color: #000000; }
+    .container { max-width: 600px; margin: auto; background: #FFFFFF; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #D8B56A; }
+    .header { text-align: center; padding: 30px 20px; background-color: #A3B8CC; color: #FFFFFF; border-bottom: 3px solid #8B4513; }
+    .header h1 { margin: 0; font-size: 26px; font-weight: 300; letter-spacing: 2px; }
+    .status { background: #D8B56A; color: #000000; text-align: center; padding: 8px; font-weight: bold; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
+    .content { padding: 30px; line-height: 1.6; }
+    .content h2 { margin-top: 0; margin-bottom: 20px; color: #8B4513; font-weight: 400; text-align: center; font-size: 22px; }
+    .card { background: #FAFAFA; border: 1px solid #EAEAEA; padding: 20px; margin-bottom: 25px; border-radius: 6px; text-align: center; }
+    .gift-image { max-width: 100%; max-height: 250px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; border: 1px solid #D8B56A; }
+    .gift-name { font-size: 20px; color: #000000; margin-bottom: 10px; font-weight: bold; }
+    .description { font-size: 14px; color: #555; margin-bottom: 15px; font-style: italic; }
+    .wedding-info { background: #F5F5DC; border-left: 4px solid #A3B8CC; padding: 15px; font-size: 14px; color: #333; margin-top: 20px; border-radius: 0 6px 6px 0; text-align: left; }
+    .wedding-info strong { color: #8B4513; }
+    .button-container { text-align: center; margin-top: 35px; }
+    .button { display: inline-block; background: #A3B8CC; color: #FFFFFF; padding: 14px 28px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 15px; border: 1px solid #92A8D1; transition: background 0.3s; }
+    .button:hover { background: #92A8D1; }
+    .footer { background: #FFFFFF; text-align: center; padding: 25px; font-size: 13px; color: #888; border-top: 1px solid #EAEAEA; }
 </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxASkbCxrIE51qABWD9vLiwnb9MPxZ2ql6Lg&s" alt="Nossa Lar Logo">
-        <h1>Presente Reservado!</h1>
-        <p>Sua reserva foi confirmada com sucesso</p>
+        <h1>Luís & Vitória</h1>
     </div>
-    <div class="status">✓ Confirmado</div>
+    <div class="status">Presente Reservado com Sucesso</div>
     <div class="content">
         <h2>Detalhes do Presente</h2>
+        
         <div class="card">
-            <h3>${gift.name}</h3>
-            <div class="info"><strong>Loja</strong> Nossa Lar</div>
-            <div class="description">${gift.description}</div>
-            <div class="info"><strong>Endereço</strong> Araguaína-TO</div>
-            <div class="info"><strong>Vendedor</strong> Teste</div>
+            ${imageHtml}
+            <div class="gift-name">${gift.name}</div>
+            <div class="description">${gift.description || 'Obrigado por nos presentear com este item especial!'}</div>
         </div>
-        <div class="thank-you">
-            <h3>Obrigado por contribuir com o nosso casamento!</h3>
-            <p>Sua generosidade torna este momento ainda mais especial.</p>
+        
+        <div class="wedding-info">
+            <strong>Local da Celebração:</strong><br>
+            Jardim Botânico do Rio de Janeiro<br>
+            Rua Jardim Botânico, 1008 - Rio de Janeiro<br><br>
+            <strong>Data e Horário:</strong><br>
+            Sábado, 12 de Outubro de 2024 às 16:30h
         </div>
-        <p style="text-align:center;">
-            <a class="button" href="https://maps.app.goo.gl/ZbPTCr9dvPB6trNL6?g_st=ipc">Visitar Loja</a>
-        </p>
+
+        <div class="button-container">
+            <a class="button" href="${whatsappUrl}" target="_blank">Avisar os Noivos (WhatsApp)</a>
+        </div>
     </div>
     <div class="footer">
-        <p>Este e-mail confirma a reserva do seu presente.</p>
-        <p>Em caso de dúvidas, entre em contato conosco.</p>
-        <p><strong>Nossa Lar</strong></p>
-        <p>A BASE DE PREÇO É A VISTA, NO CARTÃO VAI TER OS JUROS</p>
+        <p>Sua presença e generosidade tornam este momento ainda mais especial.</p>
+        <p>Com carinho,<br><strong>Luís e Vitória</strong></p>
     </div>
 </div>
 </body>
