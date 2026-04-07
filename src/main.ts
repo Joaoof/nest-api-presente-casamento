@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: ['https://vemprocasorio.netlify.app', 'http://localhost:5173'], // ou use '*' para permitir qualquer origem (apenas em dev!)
+    origin: ['https://vemprocasorio.netlify.app', 'http://localhost:5173', 'https://casamento-jn43.vercel.app/luis-vitoria'], // ou use '*' para permitir qualquer origem (apenas em dev!)
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true, // se estiver usando cookies/autenticação
   });
