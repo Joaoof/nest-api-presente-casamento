@@ -359,7 +359,7 @@ export class GiftsService {
             Alameda Araguaína<br>
             Quadra 01, Lote 09 Setor mansões do Lago<br><br>
             <strong>Data e Horário:</strong><br>
-            Sábado, 12 de Outubro de 2024 às 16:30h
+            Sábado, 05 de Setembro de 2026 às 16:00h
         </div>
 
         <div class="button-container">
