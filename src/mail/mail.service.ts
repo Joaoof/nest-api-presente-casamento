@@ -1,32 +1,21 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
-export class MailService implements OnModuleInit {
-  private transporter: nodemailer.Transporter;
+export class MailService {
+  private resend: Resend;
+  private from: string;
 
-  constructor(private configService: ConfigService) {}
-
-  onModuleInit() {
-    const host = this.configService.get<string>('MAIL_HOST');
-    const port = this.configService.get<number>('MAIL_PORT') || 587;
-    const user = this.configService.get<string>('MAIL_USER');
-    const pass = this.configService.get<string>('MAIL_PASSWORD');
-
-    if (!host || !user || !pass) {
-      throw new Error('Configuração de e-mail inválida. Verifique variáveis de ambiente.');
+  constructor(private configService: ConfigService) {
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY não configurada.');
     }
-
-    this.transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465, // automático
-      auth: {
-        user,
-        pass,
-      },
-    });
+    this.resend = new Resend(apiKey);
+    this.from =
+      this.configService.get<string>('MAIL_FROM') ||
+      'Lista de Presentes <onboarding@resend.dev>';
   }
 
   async sendMail({
@@ -38,19 +27,15 @@ export class MailService implements OnModuleInit {
     subject: string;
     html: string;
   }) {
-    const from =
-      this.configService.get<string>('MAIL_FROM') ||
-      this.configService.get<string>('MAIL_USER');
-
     try {
-      await this.transporter.sendMail({
-        from: `"Lista de Presentes" <${from}>`,
+      await this.resend.emails.send({
+        from: this.from,
         to,
         subject,
         html,
       });
     } catch (error) {
-      console.error('Erro ao enviar e-mail:', error);
+      console.error('Erro ao enviar e-mail via Resend:', error);
       throw error;
     }
   }
