@@ -356,8 +356,8 @@ export class GiftsService {
         
         <div class="wedding-info">
             <strong>Local da Celebração:</strong><br>
-            Jardim Botânico do Rio de Janeiro<br>
-            Rua Jardim Botânico, 1008 - Rio de Janeiro<br><br>
+            Alameda Araguaína<br>
+            Quadra 01, Lote 09 Setor mansões do Lago<br><br>
             <strong>Data e Horário:</strong><br>
             Sábado, 12 de Outubro de 2024 às 16:30h
         </div>
