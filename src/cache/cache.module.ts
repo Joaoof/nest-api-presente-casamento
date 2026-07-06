@@ -12,16 +12,19 @@ import { CacheService } from './cache.service';
         type: 'single',
         url: configService.get<string>('REDIS_URL'),
         options: {
+          // Nunca desiste de reconectar: o proxy da Railway derruba conexões
+          // ociosas, então retornar null aqui deixaria o cliente fechado para
+          // sempre ("Connection is closed" em toda request).
           retryStrategy: (times: number) => {
-            const delay = Math.min(times * 1000, 20000);
-            if (times > 5) {
-              console.error('Demasiadas tentativas falhas ao conectar ao Redis');
-              return null; // ❗ importante: use null, não undefined
-            }
-            return delay;
+            return Math.min(times * 200, 5000);
           },
+          // Reconecta também quando o servidor responde erros de conexão.
+          reconnectOnError: () => true,
+          // Mantém a conexão viva contra o idle-timeout do proxy.
+          keepAlive: 10000,
           connectTimeout: 10000,
           maxRetriesPerRequest: null,
+          enableReadyCheck: true,
         },
       }),
     }),
